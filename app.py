@@ -5,8 +5,8 @@ from service import create_order, get_order, get_all_orders, update_order, delet
 from auth import oidc
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://orderly_user:yourpassword@localhost:5432/orderly_db'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost:5432/mydatabase'
 db.init_app(app)
 
 # Secure routes using OpenID Connect
