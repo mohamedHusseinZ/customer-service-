@@ -9,6 +9,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://orderly_user:yourpassword@
 
 db.init_app(app)
 
+
 # Secure routes using OpenID Connect
 @app.route('/secure/customers', methods=['GET'])
 @oidc.require_login
