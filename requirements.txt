@@ -1,0 +1,8 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.4
+Flask-Migrate==4.0.4
+Flask-OIDC==2.2.0
+africastalking==1.2.8
+psycopg2-binary==2.9.7
+pytest==7.4.2
+pytest-cov==4.1.0

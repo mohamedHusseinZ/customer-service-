@@ -1,66 +1,121 @@
-from flask import Flask, request, jsonify
-from model import db
-from service import create_customer, get_customer, get_all_customers, update_customer, delete_customer
-from service import create_order, get_order, get_all_orders, update_order, delete_order
-from auth import oidc
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_oidc import OpenIDConnect
+from flask_migrate import Migrate
+from config import Config
+from service import create_customer, get_customer, get_all_customers, update_customer, delete_customer, create_order, get_order, get_all_orders, update_order, delete_order
 
+# Initialize Flask application
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://orderly_user:yourpassword@localhost:5432/orderly_db'
+app.config.from_object(Config)
 
-db.init_app(app)
+# Initialize extensions
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+oidc = OpenIDConnect(app)
 
-
-# Secure routes using OpenID Connect
-@app.route('/secure/customers', methods=['GET'])
-@oidc.require_login
-def secure_customers():
-    return get_all_customers()
-
-# Customer Routes
 @app.route('/customers', methods=['POST'])
+@oidc.require_login
 def add_customer():
-    data = request.json
-    return create_customer(data['name'], data['code'])
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        code = data.get('code')
+        result = create_customer(name, code)
+        return jsonify(result), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/customers/<int:customer_id>', methods=['GET'])
-def get_customer_by_id(customer_id):
-    return get_customer(customer_id)
+@oidc.require_login
+def get_customer_route(customer_id):
+    try:
+        result = get_customer(customer_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 @app.route('/customers', methods=['GET'])
+@oidc.require_login
 def get_all_customers_route():
-    return get_all_customers()
+    try:
+        result = get_all_customers()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/customers/<int:customer_id>', methods=['PUT'])
+@oidc.require_login
 def update_customer_route(customer_id):
-    data = request.json
-    return update_customer(customer_id, data.get('name'), data.get('code'))
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        code = data.get('code')
+        result = update_customer(customer_id, name, code)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/customers/<int:customer_id>', methods=['DELETE'])
+@oidc.require_login
 def delete_customer_route(customer_id):
-    return delete_customer(customer_id)
+    try:
+        result = delete_customer(customer_id)
+        return jsonify(result), 204
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
-# Order Routes
 @app.route('/orders', methods=['POST'])
+@oidc.require_login
 def add_order():
-    data = request.json
-    return create_order(data['item'], data['amount'], data['customer_id'])
+    try:
+        data = request.get_json()
+        item = data.get('item')
+        amount = data.get('amount')
+        customer_id = data.get('customer_id')
+        result = create_order(item, amount, customer_id)
+        return jsonify(result), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/orders/<int:order_id>', methods=['GET'])
-def get_order_by_id(order_id):
-    return get_order(order_id)
+@oidc.require_login
+def get_order_route(order_id):
+    try:
+        result = get_order(order_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 @app.route('/orders', methods=['GET'])
+@oidc.require_login
 def get_all_orders_route():
-    return get_all_orders()
+    try:
+        result = get_all_orders()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/orders/<int:order_id>', methods=['PUT'])
+@oidc.require_login
 def update_order_route(order_id):
-    data = request.json
-    return update_order(order_id, data.get('item'), data.get('amount'))
+    try:
+        data = request.get_json()
+        item = data.get('item')
+        amount = data.get('amount')
+        result = update_order(order_id, item, amount)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
+@oidc.require_login
 def delete_order_route(order_id):
-    return delete_order(order_id)
+    try:
+        result = delete_order(order_id)
+        return jsonify(result), 204
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)

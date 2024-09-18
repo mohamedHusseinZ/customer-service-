@@ -1,5 +1,10 @@
 from model import db, Customer, Order
 from sqlalchemy.exc import IntegrityError
+import africastalking
+
+# Initialize Africa's Talking
+def initialize_africastalking():
+    africastalking.initialize(username='your_username', api_key='your_api_key')
 
 # Customer Service Functions
 
@@ -59,6 +64,11 @@ def create_order(item, amount, customer_id):
     new_order = Order(item=item, amount=amount, customer_id=customer.id)
     db.session.add(new_order)
     db.session.commit()
+
+    # Send SMS to customer
+    message = f"Order received: {item} for {amount} units."
+    send_sms(customer.code, message)
+    
     return {"message": "Order created successfully", "order": new_order.serialize()}, 201
 
 def get_order(order_id):
@@ -92,3 +102,13 @@ def delete_order(order_id):
     db.session.delete(order)
     db.session.commit()
     return {"message": "Order deleted successfully"}, 200
+
+def send_sms(phone_number, message):
+    """Send an SMS using Africa's Talking."""
+    try:
+        africastalking.SMS.send(message, phone_number)
+    except Exception as e:
+        raise RuntimeError(f"Failed to send SMS: {e}")
+
+# Initialize Africa's Talking configuration (run this at startup or in your main function)
+initialize_africastalking()
