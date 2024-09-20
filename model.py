@@ -12,7 +12,7 @@ class Customer(db.Model):
             'id': self.id,
             'name': self.name,
             'code': self.code,
-            'orders': [order.serialize() for order in self.orders]
+            'orders': [order.serialize() for order in self.customer_orders]  # Changed here
         }
 
 class Order(db.Model):
@@ -21,7 +21,7 @@ class Order(db.Model):
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     order_time = db.Column(db.DateTime, default=db.func.current_timestamp())
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    customer = db.relationship('Customer', backref='orders')
+    customer = db.relationship('Customer', backref='customer_orders')  # Changed here
 
     def serialize(self):
         return {

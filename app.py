@@ -14,6 +14,10 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 oidc = OpenIDConnect(app)
 
+@app.route('/')
+def index():
+    return 'Welcome to the home page!'
+
 @app.route('/customers', methods=['POST'])
 @oidc.require_login
 def add_customer():

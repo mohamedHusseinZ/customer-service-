@@ -1,3 +1,5 @@
+#auth.py
+
 from flask_oidc import OpenIDConnect
 from flask import redirect, url_for, session
 from functools import wraps
