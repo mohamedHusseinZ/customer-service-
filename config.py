@@ -1,3 +1,4 @@
+#config.py
 import os
 from dotenv import load_dotenv
 
@@ -5,10 +6,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    # Flask and database configuration
     SECRET_KEY = os.environ.get('SECRET_KEY', 'your_secret_key')
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://orderly_user:bile@localhost:5432/orderly_db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL', 'postgresql://orderly_user:bile@localhost:5432/orderly_db'
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # OpenID Connect (OIDC) Configuration
     OIDC_CLIENT_SECRETS = os.environ.get('OIDC_CLIENT_SECRETS', 'client_secrets.json')
-    OIDC_ISSUER = os.environ.get('OIDC_ISSUER', 'https://accounts.google.com')  # Set a default or ensure it's set in the .env file
+    OIDC_ISSUER = os.environ.get('OIDC_ISSUER', 'https://accounts.google.com')
     OIDC_SCOPES = ['openid', 'profile', 'email']
-    OIDC_PROVIDER_URL = os.environ.get('OIDC_PROVIDER_URL', 'https://accounts.google.com/.well-known/openid-configuration')  # Ensure this is correctly set
+
+    # Okta-specific Configuration
+    OKTA_CLIENT_ID = os.environ.get('4EUwVOpU94P8kQQGQo0i6V76RQomcHMG')
+    OKTA_ISSUER = os.environ.get('dev-soptrf3p4mkmgsza.us.auth0.com')
+    REDIRECT_URI = os.environ.get('http://127.0.0.1:5000/authorization-code/callback')
+
+    # OIDC Provider URL
+    OIDC_PROVIDER_URL = os.environ.get(
+        'OIDC_PROVIDER_URL', 'https://accounts.google.com/.well-known/openid-configuration'
+    )
