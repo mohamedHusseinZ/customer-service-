@@ -5,8 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_oidc import OpenIDConnect
 from flask_migrate import Migrate
 from config import Config
-from service import (create_customer, get_customer, get_all_customers, update_customer, delete_customer, 
-                     create_order, get_order, get_all_orders, update_order, delete_order)
+from service import (
+    create_customer, get_customer, get_all_customers, update_customer, delete_customer,
+    create_order, get_order, get_all_orders, update_order, delete_order
+)
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -17,18 +19,19 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 oidc = OpenIDConnect(app)
 
-# Okta Configurations
-client_secret = os.environ.get('OKTA_CLIENT_SECRET')
-client_id = os.environ.get('OKTA_CLIENT_ID')
-issuer = os.environ.get('OKTA_ISSUER')  # Set this in your .env file or environment
-redirect_uri = os.environ.get('REDIRECT_URI', "http://127.0.0.1:5000/authorization-code/callback")
+# Okta Configurations (ensure env variables are set)
+client_secret = os.getenv('kCU9MjmxL0Cmi5dJDPI-WjpIPXIIRqlT2E-SNBdojYeWr_o8lZQkh03OCwR4lEmg')
+client_id = os.getenv('4EUwVOpU94P8kQQGQo0i6V76RQomcHMG')
+issuer = os.getenv('https://dev-soptrf3p4mkmgsza.us.auth0.com')
+redirect_uri = os.getenv('REDIRECT_URI', "https://abcd1234.ngrok.io/authorization-code/callback")
+
 
 @app.route('/profile')
 @oidc.require_login
 def profile():
     try:
-        # Retrieve access token from somewhere (e.g., session or token response)
-        access_token = 'your-access-token'
+        # Retrieve access token from OIDC session
+        access_token = oidc.get_access_token()
 
         # Make a request to the user info endpoint
         userinfo_url = f"{issuer}/v1/userinfo"
@@ -42,11 +45,16 @@ def profile():
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/login')
 def login():
     # Redirect the user to Okta's authorization URL
-    authorization_url = f"{issuer}/v1/authorize?client_id={client_id}&response_type=code&scope=openid profile email&redirect_uri={redirect_uri}&state=random_state"
+    authorization_url = (
+        f"{issuer}/v1/authorize?"
+        f"client_id={client_id}&response_type=code&scope=openid profile email&redirect_uri={redirect_uri}&state=random_state"
+    )
     return redirect(authorization_url)
+
 
 @app.route('/authorization-code/callback')
 def callback():
@@ -73,9 +81,11 @@ def callback():
     else:
         return jsonify({'error': 'Failed to get access token'}), 400
 
+
 @app.route('/')
 def index():
     return 'Welcome to my web!'
+
 
 # Customer routes
 @app.route('/customers', methods=['POST'])
@@ -90,6 +100,7 @@ def add_customer():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/customers/<int:customer_id>', methods=['GET'])
 @oidc.require_login
 def get_customer_route(customer_id):
@@ -99,6 +110,7 @@ def get_customer_route(customer_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
+
 @app.route('/customers', methods=['GET'])
 @oidc.require_login
 def get_all_customers_route():
@@ -107,6 +119,7 @@ def get_all_customers_route():
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/customers/<int:customer_id>', methods=['PUT'])
 @oidc.require_login
@@ -120,6 +133,7 @@ def update_customer_route(customer_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/customers/<int:customer_id>', methods=['DELETE'])
 @oidc.require_login
 def delete_customer_route(customer_id):
@@ -128,6 +142,7 @@ def delete_customer_route(customer_id):
         return jsonify(result), 204
     except Exception as e:
         return jsonify({'error': str(e)}), 404
+
 
 # Order routes
 @app.route('/orders', methods=['POST'])
@@ -143,6 +158,7 @@ def add_order():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/orders/<int:order_id>', methods=['GET'])
 @oidc.require_login
 def get_order_route(order_id):
@@ -152,6 +168,7 @@ def get_order_route(order_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 404
 
+
 @app.route('/orders', methods=['GET'])
 @oidc.require_login
 def get_all_orders_route():
@@ -160,6 +177,7 @@ def get_all_orders_route():
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/orders/<int:order_id>', methods=['PUT'])
 @oidc.require_login
@@ -173,6 +191,7 @@ def update_order_route(order_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
 @oidc.require_login
 def delete_order_route(order_id):
@@ -181,6 +200,7 @@ def delete_order_route(order_id):
         return jsonify(result), 204
     except Exception as e:
         return jsonify({'error': str(e)}), 404
+
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
