@@ -1,45 +1,51 @@
-from sqlalchemy import inspect
-from datetime import datetime
-from app import app, db
-from model import Customer, Order
-from sqlalchemy.exc import SQLAlchemyError
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
+from model import Customer, Order, db  # Ensure the models are imported correctly
 
-def seed_database():
-    with app.app_context():
-        # Create all tables
-        db.create_all()
-        
-        # Inspect the database for tables
-        inspector = inspect(db.engine)
-        tables = inspector.get_table_names()
-        
-        # Check if the 'customer' table exists
-        if 'customer' in tables:
-            print("Table 'customer' exists.")
-        else:
-            print("Table 'customer' does not exist.")
-            return  # Exit if the table does not exist
+# Set up your database connection
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://orderly_user:bile@localhost:5432/orderly_db')
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
-        # Sample data
-        customers = [
-            Customer(name='John Doe', code='CUST001'),
-            Customer(name='Jane Smith', code='CUST002')
-        ]
-        
-        orders = [
-            Order(item='Laptop', amount=999.99, order_time=datetime(2024, 9, 19, 10, 0, 0), customer_id=1),
-            Order(item='Mouse', amount=25.50, order_time=datetime(2024, 9, 19, 11, 0, 0), customer_id=2)
-        ]
+def create_tables():
+    """Create the database tables based on the models."""
+    db.metadata.create_all(engine)
 
-        try:
-            # Add sample data to the session
-            db.session.bulk_save_objects(customers)
-            db.session.bulk_save_objects(orders)
-            db.session.commit()
-            print("Data seeded successfully.")
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            print(f"An error occurred: {e}")
+def seed_data():
+    session = Session()
 
-if __name__ == '__main__':
-    seed_database()
+    # Sample customer data
+    customers = [
+        Customer(name='John Doe', code='C001', email='john@example.com', phone='1234567890'),
+        Customer(name='Jane Smith', code='C002', email='jane@example.com', phone='0987654321'),
+    ]
+
+    # Sample order data
+    orders = [
+        Order(item='Product A', amount=99.99, customer_id=1),
+        Order(item='Product B', amount=49.99, customer_id=2),
+    ]
+
+    try:
+        # Add customers to the session
+        session.add_all(customers)
+        session.commit()  # Commit the transaction
+        print("Customer data seeded successfully.")
+
+        # Add orders to the session
+        session.add_all(orders)
+        session.commit()  # Commit the transaction
+        print("Order data seeded successfully.")
+
+    except IntegrityError as e:
+        session.rollback()  # Roll back in case of error
+        print(f"Error occurred: {str(e)}")
+
+    finally:
+        session.close()  # Close the session
+
+if __name__ == "__main__":
+    create_tables()
+    seed_data()

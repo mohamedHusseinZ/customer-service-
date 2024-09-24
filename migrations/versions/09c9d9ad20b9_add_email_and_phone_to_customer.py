@@ -1,8 +1,8 @@
-"""empty message
+"""Add email and phone to customer
 
-Revision ID: 4cb0cc037cc3
+Revision ID: 09c9d9ad20b9
 Revises: 
-Create Date: 2024-09-19 15:28:24.720469
+Create Date: 2024-09-24 23:32:45.746792
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '4cb0cc037cc3'
+revision = '09c9d9ad20b9'
 down_revision = None
 branch_labels = None
 depends_on = None
