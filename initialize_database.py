@@ -1,3 +1,4 @@
+#initialize_database.py
 from app import app, db
 from model import Customer, Order
 

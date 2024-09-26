@@ -1,3 +1,4 @@
+#model.py
 from db import db  # Import db from the new db module
 
 class Customer(db.Model):

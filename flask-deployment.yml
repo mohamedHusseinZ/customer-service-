@@ -1,0 +1,43 @@
+#flask-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app-deployment
+  labels:
+    app: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: zaki1299/flask-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://orderly_user:bile@db-service:5432/orderly_db"
+        - name: OIDC_CLIENT_SECRETS
+          value: "client_secrets.json"
+        imagePullPolicy: Always  # Ensure that the image is pulled every time
+      imagePullSecrets:
+      - name: regcred  # Reference to the Docker registry secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30000  # Set desired NodePort to a valid range (30000-32767)
+  selector:
+    app: flask-app  # Match your pod labels

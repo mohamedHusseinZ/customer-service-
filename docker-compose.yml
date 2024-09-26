@@ -1,0 +1,25 @@
+#docker-compose.yml
+version: '3'
+services:
+  flask-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: "postgresql://orderly_user:bile@db:5432/orderly_db"
+      OIDC_CLIENT_SECRETS: "client_secrets.json"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: orderly_db
+      POSTGRES_USER: orderly_user
+      POSTGRES_PASSWORD: bile
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

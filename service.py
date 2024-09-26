@@ -1,3 +1,4 @@
+#service.py
 from db import db  # Import db from the new db module
 from model import Customer, Order
 from sqlalchemy.exc import IntegrityError
