@@ -1,3 +1,5 @@
 # .gitignore
 
 client_secrets.json
+.env
+config.py
